@@ -20,18 +20,30 @@ object ParamSetGenerator {
 
   // Call Random.between(minInclusive: Double, maxExclusive: Double)
   private def makeRandomValue(param: ParameterModel, minValue: Double, maxValue: Double): Double = {
-    val minInc = if (param.exclusiveMinimum) Double.MinValue else 0.0
+//    val min = param.minimum
+//      .map { p =>
+//        if (p.equalsIgnoreCase("-inf")) minValue else p.toDouble
+//      }
+//      .getOrElse(minValue)
+//    val max = param.maximum
+//      .map { p =>
+//        if (p.equalsIgnoreCase("inf")) maxValue else p.toDouble
+//      }
+//      .getOrElse(maxValue)
+//    rand.between(min, max)
+
+    val minVal = 0.0
+    val maxVal = 100.0
     val min = param.minimum
       .map { p =>
-        if (p.equalsIgnoreCase("-inf")) minValue else p.toDouble + minInc
+        if (p.equalsIgnoreCase("-inf")) minVal else p.toDouble
       }
-      .getOrElse(minValue)
-    val maxInc = if (param.exclusiveMinimum) 0.0 else Double.MinValue
+      .getOrElse(minVal)
     val max = param.maximum
       .map { p =>
-        if (p.equalsIgnoreCase("inf")) maxValue else p.toDouble + maxInc
+        if (p.equalsIgnoreCase("inf")) maxVal else p.toDouble
       }
-      .getOrElse(maxValue)
+      .getOrElse(maxVal)
     rand.between(min, max)
   }
 
