@@ -3,8 +3,9 @@ package csw.generator
 import csw.logging.client.scaladsl.GenericLoggerFactory
 import csw.params.core.generics.KeyType._
 import csw.params.core.generics.Parameter
-import csw.params.core.models.Units
+import csw.params.core.models.{Choice, Choices, Units}
 import csw.params.core.models.Units.NoUnits
+import csw.time.core.models.{TAITime, UTCTime}
 import icd.web.shared.IcdModels.ParameterModel
 
 import java.nio.charset.StandardCharsets
@@ -241,9 +242,17 @@ object ParamSetGenerator {
         case "struct" =>
           None // XXX TODO (maybe, might be removed)
         case "taiDate" =>
-          None // XXX TODO
+          Some(
+            TAITimeKey
+              .make(paramName)
+              .set(TAITime.now())
+          )
         case "utcDate" =>
-          None // XXX TODO
+          Some(
+            UTCTimeKey
+              .make(paramName)
+              .set(UTCTime.now())
+          )
         case "raDec" =>
           None // XXX TODO
         case "eqCoord" =>
@@ -261,7 +270,12 @@ object ParamSetGenerator {
       }
     }
     else if (param.maybeEnum.isDefined) {
-      None // XXX TODO
+      val index = makeRandomValue(param, 0, param.maybeEnum.get.size - 1)
+      Some(
+        ChoiceKey
+          .make(paramName, Choices(param.maybeEnum.get.map(Choice(_)).toSet))
+          .set(param.maybeEnum.get(index))
+      )
     }
     else {
       // should not happen
