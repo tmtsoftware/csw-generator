@@ -33,8 +33,14 @@ class EventGeneratorPublisher(subsystem: String, component: String, events: List
 
   events.foreach { event =>
     def eventGenerator(): Option[Event] = {
-      val paramSet = ParamSetGenerator.makeParamSet(event.parameterList)
-      Some(SystemEvent(Prefix(s"$subsystem.$component"), EventName(event.name), paramSet))
+      try {
+        val paramSet = ParamSetGenerator.makeParamSet(event.parameterList)
+        Some(SystemEvent(Prefix(s"$subsystem.$component"), EventName(event.name), paramSet))
+      } catch {
+        case ex: Exception =>
+          println(s"Failed to generate param key for event: ${event.name}: ${ex.getMessage}")
+          None
+      }
     }
     val maxRateHz = event.maybeMaxRate.getOrElse(EventModel.defaultMaxRate)
     publisher.publish(eventGenerator(), (1 / maxRateHz).seconds, p => onError(p))
