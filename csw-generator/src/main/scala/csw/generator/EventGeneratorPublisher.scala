@@ -39,6 +39,7 @@ class EventGeneratorPublisher(subsystem: String, component: String, events: List
       } catch {
         case ex: Exception =>
           println(s"Failed to generate param key for event: ${event.name}: ${ex.getMessage}")
+          ex.printStackTrace()
           None
       }
     }

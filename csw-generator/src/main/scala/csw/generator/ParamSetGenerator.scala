@@ -27,6 +27,7 @@ object ParamSetGenerator {
       .replace(']', ')')
   }
 
+  //noinspection SameParameterValue
   // Call Random.between(minInclusive: Double, maxExclusive: Double)
   private def makeRandomValue(param: ParameterModel, minValue: Double, maxValue: Double): Double = {
     val min = param.minimum
@@ -42,20 +43,20 @@ object ParamSetGenerator {
     rand.between(min, max)
   }
 
-  // Call Random.between(minInclusive: Int, maxExclusive: Int)
-  private def makeRandomValue(param: ParameterModel, minValue: Int, maxValue: Int): Int = {
+  // Call Random.between(minInclusive: Long, maxExclusive: Long)
+  private def makeRandomValue(param: ParameterModel, minValue: Long, maxValue: Long): Long = {
     val minInc = if (param.exclusiveMinimum) 1 else 0
     val min = param.minimum
       .map { p =>
         if (p.equalsIgnoreCase("-inf")) minValue else p.toInt + minInc
       }
-      .getOrElse(minValue)
-    val maxInc = if (param.exclusiveMinimum) 0 else 1
+      .getOrElse(minValue + minInc)
+    val maxInc = if (param.exclusiveMaximum) 0 else 1
     val max = param.maximum
       .map { p =>
         if (p.equalsIgnoreCase("inf")) maxValue else p.toInt + maxInc
       }
-      .getOrElse(maxValue)
+      .getOrElse(maxValue + maxInc)
     rand.between(min, max)
   }
 
@@ -77,28 +78,28 @@ object ParamSetGenerator {
     val paramName = fixParamName(param.name)
     param.maybeArrayType.get match {
       case "integer" | "number" =>
-        def a = (1 to dim2).map(_ => makeRandomValue(param, Int.MinValue, Int.MaxValue)).toArray
+        def a = (1 to dim2).map(_ => makeRandomValue(param, Int.MinValue, Int.MaxValue-1).toInt).toArray
         Some(
           IntMatrixKey
             .make(paramName, makeCswUnits(param.units))
             .set((1 to dim1).map(_ => a).toArray)
         )
       case "byte" =>
-        def a = (1 to dim2).map(_ => makeRandomValue(param, Byte.MinValue, Byte.MaxValue).toByte).toArray
+        def a = (1 to dim2).map(_ => makeRandomValue(param, Byte.MinValue, Byte.MaxValue-1).toByte).toArray
         Some(
           ByteMatrixKey
             .make(paramName, makeCswUnits(param.units))
             .set((1 to dim1).map(_ => a).toArray)
         )
       case "short" =>
-        def a = (1 to dim2).map(_ => makeRandomValue(param, Short.MinValue, Short.MaxValue).toShort).toArray
+        def a = (1 to dim2).map(_ => makeRandomValue(param, Short.MinValue, Short.MaxValue-1).toShort).toArray
         Some(
           ShortMatrixKey
             .make(paramName, makeCswUnits(param.units))
             .set((1 to dim1).map(_ => a).toArray)
         )
       case "long" =>
-        def a = (1 to dim2).map(_ => makeRandomValue(param, Long.MinValue, Long.MaxValue).toLong).toArray
+        def a = (1 to dim2).map(_ => makeRandomValue(param, Long.MinValue, Long.MaxValue-1)).toArray
         Some(
           LongMatrixKey
             .make(paramName, makeCswUnits(param.units))
@@ -140,25 +141,25 @@ object ParamSetGenerator {
           Some(
             IntArrayKey
               .make(paramName, makeCswUnits(param.units))
-              .set((1 to arraySize).map(_ => makeRandomValue(param, Int.MinValue, Int.MaxValue)).toArray)
+              .set((1 to arraySize).map(_ => makeRandomValue(param, Int.MinValue, Int.MaxValue-1).toInt).toArray)
           )
         case "byte" =>
           Some(
             ByteArrayKey
               .make(paramName, makeCswUnits(param.units))
-              .set((1 to arraySize).map(_ => makeRandomValue(param, Byte.MinValue, Byte.MaxValue).toByte).toArray)
+              .set((1 to arraySize).map(_ => makeRandomValue(param, Byte.MinValue, Byte.MaxValue-1).toByte).toArray)
           )
         case "short" =>
           Some(
             ShortArrayKey
               .make(paramName, makeCswUnits(param.units))
-              .set((1 to arraySize).map(_ => makeRandomValue(param, Short.MinValue, Short.MaxValue).toShort).toArray)
+              .set((1 to arraySize).map(_ => makeRandomValue(param, Short.MinValue, Short.MaxValue-1).toShort).toArray)
           )
         case "long" =>
           Some(
             LongArrayKey
               .make(paramName, makeCswUnits(param.units))
-              .set((1 to arraySize).map(_ => makeRandomValue(param, Long.MinValue, Long.MaxValue).toLong).toArray)
+              .set((1 to arraySize).map(_ => makeRandomValue(param, Long.MinValue, Long.MaxValue-1)).toArray)
           )
         case "float" =>
           Some(
@@ -191,25 +192,25 @@ object ParamSetGenerator {
           Some(
             IntKey
               .make(paramName, makeCswUnits(param.units))
-              .set(makeRandomValue(param, Int.MinValue, Int.MaxValue))
+              .set(makeRandomValue(param, Int.MinValue, Int.MaxValue-1).toInt)
           )
         case "byte" =>
           Some(
             ByteKey
               .make(paramName, makeCswUnits(param.units))
-              .set(makeRandomValue(param, Byte.MinValue, Byte.MaxValue).toByte)
+              .set(makeRandomValue(param, Byte.MinValue, Byte.MaxValue-1).toByte)
           )
         case "short" =>
           Some(
             ShortKey
               .make(paramName, makeCswUnits(param.units))
-              .set(makeRandomValue(param, Short.MinValue, Short.MaxValue).toShort)
+              .set(makeRandomValue(param, Short.MinValue, Short.MaxValue-1).toShort)
           )
         case "long" =>
           Some(
             LongKey
               .make(paramName, makeCswUnits(param.units))
-              .set(makeRandomValue(param, Long.MinValue, Long.MaxValue).toLong)
+              .set(makeRandomValue(param, Long.MinValue, Long.MaxValue-1))
           )
         case "float" =>
           Some(
@@ -270,7 +271,7 @@ object ParamSetGenerator {
       }
     }
     else if (param.maybeEnum.isDefined) {
-      val index = makeRandomValue(param, 0, param.maybeEnum.get.size - 1)
+      val index = makeRandomValue(param, 0, param.maybeEnum.get.size - 1).toInt
       Some(
         ChoiceKey
           .make(paramName, Choices(param.maybeEnum.get.map(Choice(_)).toSet))
@@ -279,7 +280,7 @@ object ParamSetGenerator {
     }
     else {
       // should not happen
-      log.error(s"No parameter type or enum type defined for ${paramName}")
+      log.error("No parameter type or enum type defined for " + paramName)
       None
     }
   }
