@@ -3,7 +3,8 @@ package csw.generator
 import csw.logging.client.scaladsl.GenericLoggerFactory
 import csw.params.core.generics.KeyType._
 import csw.params.core.generics.Parameter
-import csw.params.core.models.{Choice, Choices, Units}
+import csw.params.core.models.Coords.EqCoord
+import csw.params.core.models.{Angle, Choice, Choices, RaDec, Units}
 import csw.params.core.models.Units.NoUnits
 import csw.time.core.models.{TAITime, UTCTime}
 import icd.web.shared.IcdModels.ParameterModel
@@ -78,28 +79,28 @@ object ParamSetGenerator {
     val paramName = fixParamName(param.name)
     param.maybeArrayType.get match {
       case "integer" | "number" =>
-        def a = (1 to dim2).map(_ => makeRandomValue(param, Int.MinValue, Int.MaxValue-1).toInt).toArray
+        def a = (1 to dim2).map(_ => makeRandomValue(param, Int.MinValue, Int.MaxValue - 1).toInt).toArray
         Some(
           IntMatrixKey
             .make(paramName, makeCswUnits(param.units))
             .set((1 to dim1).map(_ => a).toArray)
         )
       case "byte" =>
-        def a = (1 to dim2).map(_ => makeRandomValue(param, Byte.MinValue, Byte.MaxValue-1).toByte).toArray
+        def a = (1 to dim2).map(_ => makeRandomValue(param, Byte.MinValue, Byte.MaxValue - 1).toByte).toArray
         Some(
           ByteMatrixKey
             .make(paramName, makeCswUnits(param.units))
             .set((1 to dim1).map(_ => a).toArray)
         )
       case "short" =>
-        def a = (1 to dim2).map(_ => makeRandomValue(param, Short.MinValue, Short.MaxValue-1).toShort).toArray
+        def a = (1 to dim2).map(_ => makeRandomValue(param, Short.MinValue, Short.MaxValue - 1).toShort).toArray
         Some(
           ShortMatrixKey
             .make(paramName, makeCswUnits(param.units))
             .set((1 to dim1).map(_ => a).toArray)
         )
       case "long" =>
-        def a = (1 to dim2).map(_ => makeRandomValue(param, Long.MinValue, Long.MaxValue-1)).toArray
+        def a = (1 to dim2).map(_ => makeRandomValue(param, Long.MinValue, Long.MaxValue - 1)).toArray
         Some(
           LongMatrixKey
             .make(paramName, makeCswUnits(param.units))
@@ -141,38 +142,38 @@ object ParamSetGenerator {
           Some(
             IntArrayKey
               .make(paramName, makeCswUnits(param.units))
-              .set((1 to arraySize).map(_ => makeRandomValue(param, Int.MinValue, Int.MaxValue-1).toInt).toArray)
+              .set((1 to arraySize).map(_ => makeRandomValue(param, Int.MinValue, Int.MaxValue - 1).toInt).toArray)
           )
         case "byte" =>
           Some(
             ByteArrayKey
               .make(paramName, makeCswUnits(param.units))
-              .set((1 to arraySize).map(_ => makeRandomValue(param, Byte.MinValue, Byte.MaxValue-1).toByte).toArray)
+              .set((1 to arraySize).map(_ => makeRandomValue(param, Byte.MinValue, Byte.MaxValue - 1).toByte).toArray)
           )
         case "short" =>
           Some(
             ShortArrayKey
               .make(paramName, makeCswUnits(param.units))
-              .set((1 to arraySize).map(_ => makeRandomValue(param, Short.MinValue, Short.MaxValue-1).toShort).toArray)
+              .set((1 to arraySize).map(_ => makeRandomValue(param, Short.MinValue, Short.MaxValue - 1).toShort).toArray)
           )
         case "long" =>
           Some(
             LongArrayKey
               .make(paramName, makeCswUnits(param.units))
-              .set((1 to arraySize).map(_ => makeRandomValue(param, Long.MinValue, Long.MaxValue-1)).toArray)
+              .set((1 to arraySize).map(_ => makeRandomValue(param, Long.MinValue, Long.MaxValue - 1)).toArray)
           )
         case "float" =>
           Some(
             FloatArrayKey
               .make(paramName, makeCswUnits(param.units))
-//              .set((1 to arraySize).map(_ => makeRandomValue(param, Float.MinValue, Float.MaxValue).toFloat).toArray)
+              //              .set((1 to arraySize).map(_ => makeRandomValue(param, Float.MinValue, Float.MaxValue).toFloat).toArray)
               .set((1 to arraySize).map(_ => makeRandomValue(param, -1.0, 1.0).toFloat).toArray)
           )
         case "double" =>
           Some(
             DoubleArrayKey
               .make(paramName, makeCswUnits(param.units))
-//              .set((1 to arraySize).map(_ => makeRandomValue(param, Double.MinValue, Double.MaxValue)).toArray)
+              //              .set((1 to arraySize).map(_ => makeRandomValue(param, Double.MinValue, Double.MaxValue)).toArray)
               .set((1 to arraySize).map(_ => makeRandomValue(param, -1.0, 1.0)).toArray)
           )
         case x =>
@@ -181,6 +182,11 @@ object ParamSetGenerator {
       }
     }
   }
+
+  // XXX Temp fix: Replace with csw version in next release
+  private val CIRCLE: Long = 360L * 60L * 60L * 1000L * 1000L
+  def randomRa(): Angle    = new Angle((CIRCLE * math.random()).asInstanceOf[Long])
+  def randomDe(): Angle    = new Angle((CIRCLE / 2 * math.random() - CIRCLE / 4).asInstanceOf[Long])
 
   // Generates a parameter with a random value in the defined range
   def makeParameter(param: ParameterModel): Option[Parameter[_]] = {
@@ -192,38 +198,38 @@ object ParamSetGenerator {
           Some(
             IntKey
               .make(paramName, makeCswUnits(param.units))
-              .set(makeRandomValue(param, Int.MinValue, Int.MaxValue-1).toInt)
+              .set(makeRandomValue(param, Int.MinValue, Int.MaxValue - 1).toInt)
           )
         case "byte" =>
           Some(
             ByteKey
               .make(paramName, makeCswUnits(param.units))
-              .set(makeRandomValue(param, Byte.MinValue, Byte.MaxValue-1).toByte)
+              .set(makeRandomValue(param, Byte.MinValue, Byte.MaxValue - 1).toByte)
           )
         case "short" =>
           Some(
             ShortKey
               .make(paramName, makeCswUnits(param.units))
-              .set(makeRandomValue(param, Short.MinValue, Short.MaxValue-1).toShort)
+              .set(makeRandomValue(param, Short.MinValue, Short.MaxValue - 1).toShort)
           )
         case "long" =>
           Some(
             LongKey
               .make(paramName, makeCswUnits(param.units))
-              .set(makeRandomValue(param, Long.MinValue, Long.MaxValue-1))
+              .set(makeRandomValue(param, Long.MinValue, Long.MaxValue - 1))
           )
         case "float" =>
           Some(
             FloatKey
               .make(paramName, makeCswUnits(param.units))
-//              .set(makeRandomValue(param, Float.MinValue, Float.MaxValue).toFloat)
+              //              .set(makeRandomValue(param, Float.MinValue, Float.MaxValue).toFloat)
               .set(makeRandomValue(param, -1.0, 1.0).toFloat)
           )
         case "double" =>
           Some(
             DoubleKey
               .make(paramName, makeCswUnits(param.units))
-//              .set(makeRandomValue(param, Double.MinValue, Double.MaxValue))
+              //              .set(makeRandomValue(param, Double.MinValue, Double.MaxValue))
               .set(makeRandomValue(param, -1.0, 1.0))
           )
         case "boolean" =>
@@ -255,9 +261,22 @@ object ParamSetGenerator {
               .set(UTCTime.now())
           )
         case "raDec" =>
-          None // XXX TODO
+          Some(
+            RaDecKey
+              .make(paramName)
+              // XXX TODO: RaDec: What units for RA, Dec? What Epoch?
+              .set(RaDec(rand.between(0.0, 24.0), rand.between(-90.0, 90.0)))
+          )
         case "eqCoord" =>
-          None // XXX TODO
+          val eq = EqCoord(
+            ra = randomRa(),
+            dec = randomDe()
+          )
+          Some(
+            EqCoordKey
+              .make(paramName)
+              .set(eq)
+          )
         case "solarSystemCoord" =>
           None // XXX TODO
         case "minorPlanetCoord" =>
