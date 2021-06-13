@@ -3,8 +3,9 @@ package csw.generator
 import csw.logging.client.scaladsl.GenericLoggerFactory
 import csw.params.core.generics.KeyType._
 import csw.params.core.generics.Parameter
-import csw.params.core.models.Coords.EqCoord
-import csw.params.core.models.{Angle, Choice, Choices, RaDec, Units}
+import csw.params.core.models.Angle.double2angle
+import csw.params.core.models.Coords.{AltAzCoord, CometCoord, EqCoord, MinorPlanetCoord, SolarSystemCoord, SolarSystemObject}
+import csw.params.core.models.{Angle, Choice, Choices, Coords, RaDec, Units}
 import csw.params.core.models.Units.NoUnits
 import csw.time.core.models.{TAITime, UTCTime}
 import icd.web.shared.IcdModels.ParameterModel
@@ -268,25 +269,80 @@ object ParamSetGenerator {
               .set(RaDec(rand.between(0.0, 24.0), rand.between(-90.0, 90.0)))
           )
         case "eqCoord" =>
-          val eq = EqCoord(
-            ra = randomRa(),
-            dec = randomDe()
-          )
           Some(
             EqCoordKey
               .make(paramName)
-              .set(eq)
+              .set(
+                EqCoord(
+                  ra = randomRa(),
+                  dec = randomDe()
+                )
+              )
           )
         case "solarSystemCoord" =>
-          None // XXX TODO
+          Some(
+            SolarSystemCoordKey
+              .make(paramName)
+              .set(
+                SolarSystemCoord(
+                  tag = Coords.BASE,
+                  body = SolarSystemObject.values(rand.between(0, SolarSystemObject.values.length))
+                )
+              )
+          )
         case "minorPlanetCoord" =>
-          None // XXX TODO
+          Some(
+            MinorPlanetCoordKey
+              .make(paramName)
+              .set(
+                MinorPlanetCoord(
+                  tag = Coords.BASE,
+                  epoch = 2000.0, // XXX FIXME
+                  inclination = rand.between(0.0, 180.0).degree,
+                  longAscendingNode = rand.between(0.0, 180.0).degree,
+                  argOfPerihelion = rand.between(0.0, 180.0).degree,
+                  meanDistance = rand.between(0.0, 10000),
+                  eccentricity = rand.between(0.0, 1.0),
+                  meanAnomaly = rand.between(0.0, 360.0).degree
+                )
+              )
+          )
         case "cometCoord" =>
-          None // XXX TODO
+          Some(
+            CometCoordKey
+              .make(paramName)
+              .set(
+                CometCoord(
+                  tag = Coords.BASE,
+                  epochOfPerihelion = 2000.0, // XXX FIXME
+                  inclination = rand.between(0.0, 180.0).degree,
+                  longAscendingNode = rand.between(0.0, 180.0).degree,
+                  argOfPerihelion = rand.between(0.0, 180.0).degree,
+                  perihelionDistance = rand.between(0.0, 10000),
+                  eccentricity = rand.between(0.0, 1.0)
+                )
+              )
+          )
         case "altAzCoord" =>
-          None // XXX TODO
+          Some(
+            AltAzCoordKey
+              .make(paramName)
+              .set(
+                AltAzCoord(
+                  tag = Coords.BASE,
+                  alt = rand.between(-90.0, 90.0).degree,
+                  az = rand.between(0.0, 360.0).degree
+                )
+              )
+          )
         case "coord" =>
-          None // XXX TODO
+          rand.between(0, 5) match {
+            case 0 => makeParameter(param.copy(maybeType = Some("eqCoord")))
+            case 1 => makeParameter(param.copy(maybeType = Some("solarSystemCoord")))
+            case 2 => makeParameter(param.copy(maybeType = Some("minorPlanetCoord")))
+            case 3 => makeParameter(param.copy(maybeType = Some("cometCoord")))
+            case _ => makeParameter(param.copy(maybeType = Some("altAzCoord")))
+          }
       }
     }
     else if (param.maybeEnum.isDefined) {
