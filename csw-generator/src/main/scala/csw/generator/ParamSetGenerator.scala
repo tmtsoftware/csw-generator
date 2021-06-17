@@ -337,11 +337,73 @@ object ParamSetGenerator {
           )
         case "coord" =>
           rand.between(0, 5) match {
-            case 0 => makeParameter(param.copy(maybeType = Some("eqCoord")))
-            case 1 => makeParameter(param.copy(maybeType = Some("solarSystemCoord")))
-            case 2 => makeParameter(param.copy(maybeType = Some("minorPlanetCoord")))
-            case 3 => makeParameter(param.copy(maybeType = Some("cometCoord")))
-            case _ => makeParameter(param.copy(maybeType = Some("altAzCoord")))
+            case 0 =>
+              Some(
+                CoordKey
+                  .make(paramName)
+                  .set(
+                    EqCoord(
+                      ra = randomRa(),
+                      dec = randomDe()
+                    )
+                  )
+              )
+            case 1 =>
+              Some(
+                CoordKey
+                  .make(paramName)
+                  .set(
+                    SolarSystemCoord(
+                      tag = Coords.BASE,
+                      body = SolarSystemObject.values(rand.between(0, SolarSystemObject.values.length))
+                    )
+                  )
+              )
+            case 2 =>
+              Some(
+                CoordKey
+                  .make(paramName)
+                  .set(
+                    MinorPlanetCoord(
+                      tag = Coords.BASE,
+                      epoch = 2000.0, // XXX FIXME
+                      inclination = rand.between(0.0, 180.0).degree,
+                      longAscendingNode = rand.between(0.0, 180.0).degree,
+                      argOfPerihelion = rand.between(0.0, 180.0).degree,
+                      meanDistance = rand.between(0.0, 10000),
+                      eccentricity = rand.between(0.0, 1.0),
+                      meanAnomaly = rand.between(0.0, 360.0).degree
+                    )
+                  )
+              )
+            case 3 =>
+              Some(
+                CoordKey
+                  .make(paramName)
+                  .set(
+                    CometCoord(
+                      tag = Coords.BASE,
+                      epochOfPerihelion = 2000.0, // XXX FIXME
+                      inclination = rand.between(0.0, 180.0).degree,
+                      longAscendingNode = rand.between(0.0, 180.0).degree,
+                      argOfPerihelion = rand.between(0.0, 180.0).degree,
+                      perihelionDistance = rand.between(0.0, 10000),
+                      eccentricity = rand.between(0.0, 1.0)
+                    )
+                  )
+              )
+            case _ =>
+              Some(
+                CoordKey
+                  .make(paramName)
+                  .set(
+                    AltAzCoord(
+                      tag = Coords.BASE,
+                      alt = rand.between(-90.0, 90.0).degree,
+                      az = rand.between(0.0, 360.0).degree
+                    )
+                  )
+              )
           }
       }
     }
